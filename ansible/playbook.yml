@@ -1,0 +1,53 @@
+- name: Deploy Web Servers and Load Balancer
+  hosts: localhost
+  become: yes
+  vars_files:
+    - vault.yml
+  tasks:
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Install Docker Compose
+      apt:
+        name: docker-compose
+        state: present
+
+    - name: Copy docker-compose.yml
+      copy:
+        src: ../docker-compose.yml
+        dest: /home/server/TestTaskAns/docker-compose.yml
+
+    - name: Start Docker containers using docker-compose
+      command: docker-compose -f /home/server/TestTaskAns/docker-compose.yml up -d
+
+    - name: Copy HAProxy config
+      copy:
+        src: ../haproxy/haproxy.cfg
+        dest: /home/server/TestTaskAns/haproxy/haproxy.cfg
+
+    - name: Copy KeepAlived config
+      copy:
+        src: ../keepalived/keepalived.conf
+        dest: /home/server/TestTaskAns/keepalived/keepalived.conf
+
+    - name: Stop HAProxy container
+      docker_container:
+        name: haproxy_1
+        state: stopped
+
+    - name: Start HAProxy container
+      docker_container:
+        name: haproxy_1
+        state: started
+
+    - name: Stop KeepAlived container
+      docker_container:
+        name: keepalived_1
+        state: stopped
+
+    - name: Start KeepAlived container
+      docker_container:
+        name: keepalived_1
+        state: started
