@@ -61,3 +61,10 @@ or you can check it without script
         sudo docker logs web_server_2
 curl should be sended several times.
 The time difference of the requests will be different (not one second)
+
+
+
+P.S. 
+1. Ansible should be installed
+2. SSH should be installed
+3. become-password and vault passwords are 12345
