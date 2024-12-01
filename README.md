@@ -17,7 +17,23 @@ Bash shell interpreter insturcion
 	
    	`sudo docker-compose up`
 
-3. **Check of the first task**:
+
+Ansible run instruction
+1. **Ansible automation**
+
+It is possible to launch the project immediately by using Ansible.
+After repository cloning you need to open TestTask folder
+
+	cd TestTask/
+
+and start Ansible playbook
+
+	ansible-playbook ansible/playbook.yml --ask-vault-pass
+
+
+
+Result Check
+1. **Check web_servers availability**:
 
 In order to check web_servers availability you can use
 
@@ -30,11 +46,11 @@ and
 for the second one.
 
 
-In order to check haproxy work you can use script load_test.sh
+2. In order to check haproxy work you can use script load_test.sh
 
-	./load_test.sh
+	`./load_test.sh
 	sudo docker logs web_server_1
-	sudo docker logs web_server_2
+	sudo docker logs web_server_2`
 
 Both web_servers would answer to requests in turn with a one second difference
 
