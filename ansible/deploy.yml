@@ -1,0 +1,74 @@
+- name: Set up Docker containers on web servers
+  hosts: web_servers
+  become: yes
+  tasks:
+    - name: TestAutomation directory creation
+      file:
+        path: "/home/{{ inventory_hostname }}/TestAutomation"
+        state: directory
+        mode: '0755'
+
+    - name: Copy files from local to remote TestAutomation
+      copy:
+        src: "{{ playbook_dir }}/../server{{ inventory_hostname[-1] }}/"
+        dest: "/home/server/TestAutomation/server{{ inventory_hostname[-1] }}"
+        owner: server
+        group: server
+        mode: '0755'
+      register: copy_result
+
+    - name: Build Docker image from directory
+      docker_image:
+        name: "my_web_server"
+        tag: "latest"
+        source: build
+        build:
+          path: "/home/server/TestAutomation/server{{ inventory_hostname[-1] }}/web_server"
+        state: present
+      register: docker_image_result
+
+    - name: Run Docker container from image
+      docker_container:
+        name: "web_server_{{ inventory_hostname[-1] }}"
+        image: "my_web_server"
+        state: started
+        restart_policy: always
+        published_ports:
+          - "80:80"
+        recreate: yes
+      register: docker_container
+
+    - name: Run docker-compose
+      command: docker-compose up -d
+      args:
+        chdir: "/home/{{ inventory_hostname }}/TestAutomation/server{{ inventory_hostname[-1] }}/web_server"
+      when: copy_result.changed
+
+- name: Configure HAProxy and Keepalived on server3 and server4
+  hosts: load_balancers
+  become: yes
+  tasks:
+    - name: Copy keepalived.conf
+      copy:
+        src: "{{ playbook_dir }}/../server{{ inventory_hostname[-1] }}/keepalived.conf"
+        dest: "/etc/keepalived/keepalived.conf"
+      notify:
+        - restart keepalived
+
+    - name: Copy haproxy.cfg
+      copy:
+        src: "{{ playbook_dir }}/../server{{ inventory_hostname[-1] }}/haproxy.cfg"
+        dest: "/etc/haproxy/haproxy.cfg"
+      notify:
+        - restart haproxy
+
+  handlers:
+    - name: restart keepalived
+      service:
+        name: keepalived
+        state: restarted
+
+    - name: restart haproxy
+      service:
+        name: haproxy
+        state: restarted
