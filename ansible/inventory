@@ -1,5 +1,0 @@
-[web_servers]
-localhost ansible_connection=local
-
-[load_balancer]
-localhost ansible_connection=local
