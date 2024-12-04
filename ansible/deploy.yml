@@ -68,6 +68,10 @@
         name: keepalived
         state: restarted
 
+    - name: sleep 5 seconds to enable VRRP
+      pause:
+        seconds: 5
+
     - name: restart haproxy
       service:
         name: haproxy
